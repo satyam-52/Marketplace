@@ -2,17 +2,20 @@ import React, { useState } from "react";
 
 export default function Main(props) {
   const [state, setState] = useState({
-    productName: '',
-    productPrice: ''
-  })
+    productName: "",
+    productPrice: "",
+  });
   return (
     <div id="content">
       <h1>Add Product</h1>
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          const name = state.productName
-          const price = window.web3.utils.toWei(state.productPrice.toString(), 'Ether')
+          const name = state.productName;
+          const price = window.web3.utils.toWei(
+            state.productPrice.toString(),
+            "Ether"
+          );
           props.createProduct(name, price);
         }}
       >
@@ -22,7 +25,9 @@ export default function Main(props) {
             id="productName"
             className="form-control"
             placeholder="Product Name"
-            onChange={e => setState({...state, productName: e.target.value})}
+            onChange={(e) =>
+              setState({ ...state, productName: e.target.value })
+            }
             required
           />
         </div>
@@ -32,7 +37,9 @@ export default function Main(props) {
             id="productPrice"
             className="form-control"
             placeholder="Product Price"
-            onChange={e => setState({...state, productPrice: e.target.value})}
+            onChange={(e) =>
+              setState({ ...state, productPrice: e.target.value })
+            }
             required
           />
         </div>
@@ -53,15 +60,35 @@ export default function Main(props) {
           </tr>
         </thead>
         <tbody id="productList">
-          <tr>
-            <th scope="row">1</th>
-            <td>iPhone X</td>
-            <td>1 ETH</td>
-            <td>0x64B37715279698E5CBcD8B00F00A54D9d779F7d8</td>
-            <td>
-              <button className="buyButton">Buy</button>
-            </td>
-          </tr>
+          {props.products.map((product, key) => {
+            return (
+              <tr key={key}>
+                <th scope="row">{product.id.toString()}</th>
+                <td>{product.name}</td>
+                <td>
+                  {window.web3.utils.fromWei(product.price.toString(), "Ether")}{" "}
+                  ETH
+                </td>
+                <td>{product.owner}</td>
+                <td>
+                  {!product.purchased ? (
+                    <button
+                      name={product.id}
+                      value={product.price}
+                      onClick={(event) => {
+                        props.purchaseProduct(
+                          event.target.name,
+                          event.target.value
+                        );
+                      }}
+                    >
+                      Buy
+                    </button>
+                  ) : null}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

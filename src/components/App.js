@@ -37,7 +37,14 @@ class App extends Component {
       );
       this.setState({ marketplace });
       const productCount = await marketplace.methods.productCount().call();
-      console.log('productCount', productCount.toString());
+      this.setState({ productCount });
+      for (let i = 1; i <= productCount; i++) {
+        const product = await marketplace.methods.products(i).call();
+        this.setState({
+          products: [...this.state.products, product],
+        });
+      }
+      console.log("products", this.state.products);
       this.setState({ loading: false });
     } else {
       alert("Marketplace contract not deployed to detected network.");
@@ -53,12 +60,23 @@ class App extends Component {
       loading: true,
     };
 
-    this.createProduct = this.createProduct.bind(this)
+    this.createProduct = this.createProduct.bind(this);
+    this.purchaseProduct = this.purchaseProduct.bind(this);
   }
 
   createProduct(name, price) {
+    this.setState({ loading: true });
+    this.state.marketplace.methods
+      .createProduct(name, price)
+      .send({ from: this.state.account })
+      .once("receipt", (receipt) => {
+        this.setState({ loading: false });
+      });
+  }
+
+  purchaseProduct(id, price) {
     this.setState({loading: true})
-    this.state.marketplace.methods.createProduct(name, price).send({from : this.state.account}).once('receipt', (receipt) => {
+    this.state.marketplace.methods.purchaseProduct(id).send({from: this.state.account, value: price}).once('receipt', (receipt) => {
       this.setState({loading: false})
     })
   }
@@ -75,7 +93,11 @@ class App extends Component {
                   <p className="text-center">Loading...</p>
                 </div>
               ) : (
-                <Main createProduct={this.createProduct} />
+                <Main
+                  createProduct={this.createProduct}
+                  purchaseProduct={this.purchaseProduct}
+                  products={this.state.products}
+                />
               )}
             </main>
           </div>
